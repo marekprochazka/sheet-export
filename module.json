@@ -2,7 +2,7 @@
   "id": "sheet-export-mw",
   "title": "Sheet Export (MW Fork)",
   "description": "Module to export Foundry sheets in PDF",
-  "version": "#{VERSION}#",
+  "version": "0.14.4",
   "library": "false",
   "compatibility": {
     "minimum": "11",
@@ -39,9 +39,9 @@
       "flags": {}
     }
   ],
-  "url": "#{URL}#",
-  "manifest": "#{MANIFEST}#",
-  "download": "#{DOWNLOAD}#",
+  "url": "https://github.com/marekprochazka/sheet-export",
+  "manifest": "https://raw.githubusercontent.com/marekprochazka/sheet-export/master/module.json",
+  "download": "https://github.com/marekprochazka/sheet-export/archive/refs/heads/master.zip",
   "license": "LICENSE",
   "readme": "README.md",
   "media": [
