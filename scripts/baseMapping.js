@@ -1,6 +1,6 @@
 import { detectImageType } from './lib/image-type-detector.js';
 import { rgb } from './lib/pdf-lib.esm.js';
-import { drawCenteredParagraph, drawLeftAlignedParagraph, drawCenteredText, drawTopLeftAlignedParagraph } from './pdf-utils.js'
+import { drawCenteredParagraph, drawLeftAlignedParagraph, drawCenteredText, drawTopLeftAlignedParagraph, wrapTextToLines, drawLines } from './pdf-utils.js'
 
 class baseMapping {
 
@@ -40,7 +40,7 @@ class baseMapping {
         this.embeddedImages = new Map();
         this.embeddedFonts = new Map(); // key: fontName, value: { font, path }
 
-        this.omitChangeable = game.settings.get("sheet-export", "omitChangeable");
+        this.omitChangeable = game.settings.get("sheet-export-mw", "omitChangeable");
 
         // this.createMappings();
     }
@@ -234,7 +234,7 @@ class baseMapping {
             columns: 2,
             fonts: {
                 // fontName: pathToFont
-                Default: "/modules/sheet-export/mappings/dnd5e/Roboto-Regular.ttf"
+                Default: "/modules/sheet-export-mw/mappings/dnd5e/Roboto-Regular.ttf"
             },
             images: {
                 // Map of key -> { path, width, height }
@@ -662,6 +662,87 @@ class baseMapping {
      */
     getCardSections() {
         return []; // override in subclass
+    }
+
+    /**
+     * Appends one or more full pages of flowing text to the PDF document.
+     * Text is word-wrapped to fit the page width and automatically continues
+     * on new pages when it overflows.
+     *
+     * @param {PDFDocument} pdfDoc
+     * @param {string} text - full text content to render
+     * @param {object} opts
+     * @param {PDFFont} opts.font - embedded font for body text
+     * @param {PDFFont} [opts.titleFont] - font for page title (defaults to opts.font)
+     * @param {number} [opts.size=10] - body font size in points
+     * @param {number} [opts.titleSize=16] - title font size in points
+     * @param {number} [opts.lineHeight=1.4]
+     * @param {string} [opts.title] - title drawn at top of the first page
+     * @param {string} [opts.subtitle] - text drawn at top of continuation pages
+     * @param {RGB} [opts.color] - body text color (defaults to near-black)
+     * @param {RGB} [opts.titleColor] - title color (defaults to opts.color)
+     * @param {number} [opts.pageWidth=595.28]
+     * @param {number} [opts.pageHeight=841.89]
+     * @param {number} [opts.marginTop=50]
+     * @param {number} [opts.marginBottom=40]
+     * @param {number} [opts.marginLeft=50]
+     * @param {number} [opts.marginRight=50]
+     */
+    async addTextFlowPages(pdfDoc, text, opts = {}) {
+        const {
+            font,
+            titleFont,
+            size = 10,
+            titleSize = 16,
+            lineHeight = 1.4,
+            title = null,
+            subtitle = null,
+            color,
+            titleColor,
+            pageWidth = 595.28,
+            pageHeight = 841.89,
+            marginTop = 50,
+            marginBottom = 40,
+            marginLeft = 50,
+            marginRight = 50,
+        } = opts;
+
+        if (!text?.trim()) return;
+
+        const textColor = color ?? rgb(0.1, 0.1, 0.1);
+        const headColor = titleColor ?? textColor;
+        const tf = titleFont ?? font;
+        const bodyWidth = pageWidth - marginLeft - marginRight;
+        const lines = wrapTextToLines(text, font, size, bodyWidth);
+        if (!lines.length) return;
+
+        let lineIdx = 0;
+        let pageNum = 0;
+
+        while (lineIdx < lines.length) {
+            const page = pdfDoc.addPage([pageWidth, pageHeight]);
+            let topY = pageHeight - marginTop;
+
+            if (pageNum === 0 && title) {
+                page.drawText(title, { x: marginLeft, y: topY - titleSize, size: titleSize, font: tf, color: headColor });
+                topY -= titleSize * 2;
+            } else if (pageNum > 0 && subtitle) {
+                page.drawText(`${subtitle} (cont.)`, { x: marginLeft, y: topY - size, size, font, color: textColor });
+                topY -= size * 2;
+            }
+
+            lineIdx = drawLines(page, lines, lineIdx, {
+                x: marginLeft,
+                topY,
+                bottomY: marginBottom,
+                font,
+                size,
+                lineHeight,
+                color: textColor,
+            });
+
+            pageNum++;
+        }
     }
 
 

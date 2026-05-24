@@ -167,12 +167,12 @@ class SheetExportconfig extends FormApplication {
 	}
 
 	/** The module's ID */
-	static ID = "sheet-export";
+	static ID = "sheet-export-mw";
 
 	/** @override */
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
-			template: "modules/sheet-export/templates/module.hbs",
+			template: "modules/sheet-export-mw/templates/module.hbs",
 			id: "sheet-export-form",
 			height: (window.innerHeight * 7) / 8,
 			width: Math.max(window.innerWidth / 3, 600),
@@ -369,7 +369,7 @@ class SheetExportconfig extends FormApplication {
 		console.log(this.sheetType);
 
 		// get the mapping for the game system and the version set in the config
-		const { default: MappingClass } = await import(foundry.utils.getRoute(`/modules/sheet-export/mappings/${game.system.id}/${this.mappingVersion}/${this.mappingRelease}/${this.sheetType}.js`));
+		const { default: MappingClass } = await import(foundry.utils.getRoute(`/modules/sheet-export-mw/mappings/${game.system.id}/${this.mappingVersion}/${this.mappingRelease}/${this.sheetType}.js`));
 		var mappingClass = null;
 		try {
 			mappingClass = new MappingClass(this.actor, this.sheetType, this.sheet);
@@ -422,8 +422,8 @@ class SheetExportconfig extends FormApplication {
 			rowPdfTitle.prepend(pdfTitle);
 
 			inputForm.appendChild(rowPdfTitle);
-			const fontUtf = game.settings.get("sheet-export", "defaultFontFamily");
-			const fonUtfUrl = `/modules/sheet-export/mappings/${fontUtf}`;
+			const fontUtf = game.settings.get("sheet-export-mw", "defaultFontFamily");
+			const fonUtfUrl = `/modules/sheet-export-mw/mappings/${fontUtf}`;
 
 			const fontUtfUrl = foundry.utils.getRoute(fonUtfUrl);
 			const fontUtfBuffer = await fetch(fontUtfUrl).then(res => res.arrayBuffer());

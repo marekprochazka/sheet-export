@@ -1,6 +1,6 @@
 {
-  "id": "sheet-export",
-  "title": "Sheet export",
+  "id": "sheet-export-mw",
+  "title": "Sheet Export (MW Fork)",
   "description": "Module to export Foundry sheets in PDF",
   "version": "#{VERSION}#",
   "library": "false",

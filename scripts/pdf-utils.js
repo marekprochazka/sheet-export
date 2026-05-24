@@ -319,6 +319,86 @@ export function drawTopLeftAlignedParagraph(
 }
 
 
+/**
+ * Wraps text into display lines that fit within a given pixel width.
+ * Handles explicit newlines as paragraph breaks (blank line → empty string in result).
+ *
+ * @param {string} text
+ * @param {PDFFont} font
+ * @param {number} size
+ * @param {number} width - max line width in points
+ * @returns {string[]}
+ */
+export function wrapTextToLines(text, font, size, width) {
+  const rawLines = text.split(/\r?\n/);
+  const result = [];
+
+  for (const raw of rawLines) {
+    if (raw.trim() === "") {
+      result.push("");
+      continue;
+    }
+
+    const words = raw.split(/\s+/).filter(Boolean);
+    let cur = "";
+
+    for (const w of words) {
+      if (font.widthOfTextAtSize(w, size) > width) {
+        if (cur) { result.push(cur); cur = ""; }
+        let piece = "";
+        for (const ch of w) {
+          const t = piece + ch;
+          if (font.widthOfTextAtSize(t, size) > width) {
+            if (piece) result.push(piece);
+            piece = ch;
+          } else {
+            piece = t;
+          }
+        }
+        if (piece) cur = piece;
+        continue;
+      }
+      const candidate = cur ? `${cur} ${w}` : w;
+      if (font.widthOfTextAtSize(candidate, size) <= width) {
+        cur = candidate;
+      } else {
+        if (cur) result.push(cur);
+        cur = w;
+      }
+    }
+    if (cur) result.push(cur);
+  }
+
+  return result;
+}
+
+/**
+ * Draws pre-wrapped lines of text top-down inside a vertical band on a page.
+ * Stops when the next line would go below bottomY.
+ *
+ * @param {PDFPage} page
+ * @param {string[]} lines - pre-wrapped lines (empty string = blank line)
+ * @param {number} startIdx - index of the first line to draw
+ * @param {{ x: number, topY: number, bottomY: number, font: PDFFont, size: number, lineHeight: number, color: RGB }} opts
+ * @returns {number} index of the first line that did NOT fit (== lines.length if all fit)
+ */
+export function drawLines(page, lines, startIdx, { x, topY, bottomY, font, size, lineHeight, color }) {
+  const lh = size * lineHeight;
+  let cursorY = topY - lh;
+  let idx = startIdx;
+
+  while (idx < lines.length && cursorY >= bottomY) {
+    const line = lines[idx];
+    if (line !== "") {
+      page.drawText(line, { x, y: cursorY, size, font, color });
+    }
+    cursorY -= lh;
+    idx++;
+  }
+
+  return idx;
+}
+
 export function asFoundryRoute(src) {
   if (!src) return src;
 

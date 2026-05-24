@@ -6,7 +6,7 @@ export const registerSettings = function () {
 	console.log("----------- SHEET-EXPORT -----------");
 
 	// read from file the folder structure inside the gamesystem in which we are to polulate the option list
-	FilePicker.browse("data", `modules/sheet-export/mappings/${game.system.id}`).then(results => {
+	FilePicker.browse("data", `modules/sheet-export-mw/mappings/${game.system.id}`).then(results => {
 		// Add the default option first
 		console.log(results);
 
@@ -28,7 +28,7 @@ export const registerSettings = function () {
 	});
 	console.log(mappingOptions);
 	// Register any custom module settings here
-	let modulename = "sheet-export";
+	let modulename = "sheet-export-mw";
 
 	//------------------------------------Module's Mappings--------------------------------------------
 
@@ -37,7 +37,7 @@ export const registerSettings = function () {
 		hint: game.i18n.localize(`${modulename}.settings.mappingOption.Hint`),
 		scope: "world",
 		config: true,
-		default: 'standard-latest',
+		default: 'features-2024.latest',
 		choices: mappingOptions,
 		type: String,
 		requiresReload: true,

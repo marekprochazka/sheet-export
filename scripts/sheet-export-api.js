@@ -5,7 +5,7 @@ import { systemMapping, systemMappingSheet } from './systemMapping.js';
 async function getMapping(mappingChoice, mappingRelease, mappingElement) {
 	console.log("get mapping");
 	//let mappingClass;
-	const { default: mappingClass } = await import(foundry.utils.getRoute(`/modules/sheet-export/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${mappingElement}.js`));
+	const { default: mappingClass } = await import(foundry.utils.getRoute(`/modules/sheet-export-mw/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${mappingElement}.js`));
 	console.log(mappingClass);
 	var mc = new mappingClass(actor, this.sheetType, this.sheet);
 	console.log(mc);
@@ -35,9 +35,9 @@ function getSheetTypeFromActor(actor, mappingChoice = "", mappingRelease = "") {
 		return;
 	} else if (systemMappingsSheet[game.system.id][actor.type]) {
 		console.log("there is a mapping for the actor type");
-		console.log(`/modules/sheet-export/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${systemMappingsSheet[game.system.id][actor.type]}.js`);
+		console.log(`/modules/sheet-export-mw/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${systemMappingsSheet[game.system.id][actor.type]}.js`);
 		const request = new XMLHttpRequest();
-		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${systemMappingsSheet[game.system.id][actor.type]}.js`), false); // `false` makes the request synchronous
+		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export-mw/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/${systemMappingsSheet[game.system.id][actor.type]}.js`), false); // `false` makes the request synchronous
 		request.send(null);
 		if (request.status === 200) {
 			sheetType = systemMappingsSheet[game.system.id][actor.type];
@@ -62,7 +62,7 @@ function getSheetType(actor, mappingChoice = "", mappingRelease = "") {
 		return;
 	} else if (systemMappings[game.system.id].player.includes(actor.type ?? actor.data.type)) {
 		const request = new XMLHttpRequest();
-		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/player.js`), false); // `false` makes the request synchronous
+		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export-mw/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/player.js`), false); // `false` makes the request synchronous
 		request.send(null);
 		if (request.status === 200) {
 			sheetType = "player";
@@ -72,7 +72,7 @@ function getSheetType(actor, mappingChoice = "", mappingRelease = "") {
 		}
 	} else if (systemMappings[game.system.id].npc.includes(actor.type ?? actor.data.type)) {
 		const request = new XMLHttpRequest();
-		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/npc.js`), false); // `false` makes the request synchronous
+		request.open("HEAD", foundry.utils.getRoute(`/modules/sheet-export-mw/mappings/${game.system.id}/${mappingChoice}/${mappingRelease}/npc.js`), false); // `false` makes the request synchronous
 		request.send(null);
 		if (request.status === 200) {
 			sheetType = "npc";

@@ -7,7 +7,7 @@ export class CustomMapping extends FormApplication {
         return foundry.utils.mergeObject(super.defaultOptions, {
             id: "sheet-export-customMapping",
             title: 'Custom Mappings',
-            template: "./modules/sheet-export/templates/customMapping.hbs",
+            template: "./modules/sheet-export-mw/templates/customMapping.hbs",
             width: 650,
             closeOnSubmit: true,
             resizable: true,
@@ -66,14 +66,14 @@ export class CustomMapping extends FormApplication {
             console.log("saveJsonBuffer");
             console.log(file);
             console.log(type);
-            let response = await FilePicker.upload("data", "modules/sheet-export/mappings/dnd5e/custom/latest", file, {});
+            let response = await FilePicker.upload("data", "modules/sheet-export-mw/mappings/dnd5e/custom/latest", file, {});
             console.log(response);
         }
     */
     async saveFile(file) {
         console.log("saveJsBuffer");
         console.log(file);
-        let response = await FilePicker.upload("data", `modules/sheet-export/mappings/${game.system.id}/custom/latest`, file, {});
+        let response = await FilePicker.upload("data", `modules/sheet-export-mw/mappings/${game.system.id}/custom/latest`, file, {});
         console.log(response);
         const reader = new FileReader();
 //        reader.onload = ev => this.onFileUpload(ev.target.result);

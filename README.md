@@ -1,3 +1,17 @@
+# MW Fork
+
+This is a personal fork of [sheet-export by gioppoluca](https://github.com/gioppoluca/sheet-export).
+
+## Changes in this fork
+
+- **New `features/2024.latest` mapping variant for DnD 5e (2024)** — a new selectable option in the module settings that exports the standard 2024 character sheet with all Features & Traits fields left blank on the main page, and instead appends one or more dedicated full-page features & traits pages at the end of the PDF. Content is automatically split across as many pages as needed so nothing gets truncated.
+  - Includes class features, species traits, and feats/other traits, each in their own labelled section.
+  - Continuation pages carry a `Character Name — Features & Traits (cont.)` header.
+- **Infrastructure to support text-flow pages in any mapping** — added `wrapTextToLines` and `drawLines` utilities to `pdf-utils.js`, and an `addTextFlowPages` method to `baseMapping.js`, so any mapping variant can append unlimited flowing-text pages without implementing pagination from scratch.
+- **Forked as `sheet-export-mw`** — module ID changed to avoid conflicts when both this fork and the original are installed in the same Foundry instance.
+
+---
+
 - ![](https://img.shields.io/badge/Foundry-v12-informational)![](https://img.shields.io/badge/Foundry-v13-informational)![](https://img.shields.io/badge/Foundry-v14-informational)
 - ![Latest Release Download Count](https://img.shields.io/github/downloads/gioppoluca/sheet-export/latest/module.zip)
 - ![Total Download Count](https://img.shields.io/github/downloads/gioppoluca/sheet-export/total?color=d1b124&label=Total%20Download)
