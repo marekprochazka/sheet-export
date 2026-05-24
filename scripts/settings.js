@@ -51,14 +51,14 @@ export const registerSettings = function () {
 	game.settings.register(modulename, "mapping-version", {
 		scope: "world",
 		config: false,
-		default: 'standard',
+		default: 'features',
 		type: String,
 		requiresReload: true,
 	});
 	game.settings.register(modulename, "mapping-release", {
 		scope: "world",
 		config: false,
-		default: 'latest',
+		default: '2024.latest',
 		type: String,
 		requiresReload: true,
 	});

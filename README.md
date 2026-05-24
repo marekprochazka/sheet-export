@@ -1,14 +1,14 @@
 # MW Fork
 
-This is a personal fork of [sheet-export by gioppoluca](https://github.com/gioppoluca/sheet-export).
+Personal fork of [sheet-export by gioppoluca](https://github.com/gioppoluca/sheet-export) for private use.
 
 ## Changes in this fork
 
-- **New `features/2024.latest` mapping variant for DnD 5e (2024)** — a new selectable option in the module settings that exports the standard 2024 character sheet with all Features & Traits fields left blank on the main page, and instead appends one or more dedicated full-page features & traits pages at the end of the PDF. Content is automatically split across as many pages as needed so nothing gets truncated.
-  - Includes class features, species traits, and feats/other traits, each in their own labelled section.
-  - Continuation pages carry a `Character Name — Features & Traits (cont.)` header.
-- **Infrastructure to support text-flow pages in any mapping** — added `wrapTextToLines` and `drawLines` utilities to `pdf-utils.js`, and an `addTextFlowPages` method to `baseMapping.js`, so any mapping variant can append unlimited flowing-text pages without implementing pagination from scratch.
-- **Forked as `sheet-export-mw`** — module ID changed to avoid conflicts when both this fork and the original are installed in the same Foundry instance.
+- **Module ID changed to `sheet-export-mw`** so it can coexist with the original when both are installed.
+- **New default mapping `features/2024.latest`** for DnD 5e 2024 — appends full overflow pages after the character sheet with all class features, species traits, feats, and equipment descriptions. Content paginates automatically.
+- **Main sheet field repurposing** — since features move to overflow pages, the CLASS FEATURES field is reused for consumables and the FEATS field for loot/containers.
+- **`@variable` references** in feature descriptions are resolved to current actor values (e.g. `@prof` → `2`).
+- **HTML tables** in descriptions are rendered as readable rows instead of being concatenated.
 
 ---
 

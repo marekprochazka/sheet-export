@@ -327,15 +327,25 @@ export function drawTopLeftAlignedParagraph(
  * @param {PDFFont} font
  * @param {number} size
  * @param {number} width - max line width in points
- * @returns {string[]}
+ * @returns {{ text: string, type: 'body'|'section'|'subhead'|'blank' }[]}
  */
 export function wrapTextToLines(text, font, size, width) {
   const rawLines = text.split(/\r?\n/);
   const result = [];
 
   for (const raw of rawLines) {
+    const sectionMatch = raw.match(/^===\s*(.+?)\s*===\s*$/);
+    if (sectionMatch) {
+      result.push({ text: sectionMatch[1].toUpperCase(), type: 'section' });
+      continue;
+    }
+    const subheadMatch = raw.match(/^###\s*(.+?)\s*(?:###)?\s*$/);
+    if (subheadMatch) {
+      result.push({ text: subheadMatch[1], type: 'subhead' });
+      continue;
+    }
     if (raw.trim() === "") {
-      result.push("");
+      result.push({ text: '', type: 'blank' });
       continue;
     }
 
@@ -344,12 +354,12 @@ export function wrapTextToLines(text, font, size, width) {
 
     for (const w of words) {
       if (font.widthOfTextAtSize(w, size) > width) {
-        if (cur) { result.push(cur); cur = ""; }
+        if (cur) { result.push({ text: cur, type: 'body' }); cur = ""; }
         let piece = "";
         for (const ch of w) {
           const t = piece + ch;
           if (font.widthOfTextAtSize(t, size) > width) {
-            if (piece) result.push(piece);
+            if (piece) result.push({ text: piece, type: 'body' });
             piece = ch;
           } else {
             piece = t;
@@ -362,37 +372,66 @@ export function wrapTextToLines(text, font, size, width) {
       if (font.widthOfTextAtSize(candidate, size) <= width) {
         cur = candidate;
       } else {
-        if (cur) result.push(cur);
+        if (cur) result.push({ text: cur, type: 'body' });
         cur = w;
       }
     }
-    if (cur) result.push(cur);
+    if (cur) result.push({ text: cur, type: 'body' });
   }
 
   return result;
 }
 
 /**
- * Draws pre-wrapped lines of text top-down inside a vertical band on a page.
+ * Draws pre-wrapped typed lines top-down inside a vertical band on a page.
+ * Lines are objects { text, type } where type is 'body', 'section', 'subhead', or 'blank'.
+ * Section and subhead lines render at larger sizes with extra spacing above them.
  * Stops when the next line would go below bottomY.
  *
  * @param {PDFPage} page
- * @param {string[]} lines - pre-wrapped lines (empty string = blank line)
- * @param {number} startIdx - index of the first line to draw
- * @param {{ x: number, topY: number, bottomY: number, font: PDFFont, size: number, lineHeight: number, color: RGB }} opts
- * @returns {number} index of the first line that did NOT fit (== lines.length if all fit)
+ * @param {{ text: string, type: string }[]} lines
+ * @param {number} startIdx
+ * @param {{ x, topY, bottomY, font, size, lineHeight, color, sectionSize?, subheadSize?, sectionColor? }} opts
+ * @returns {number} index of the first line that did NOT fit
  */
-export function drawLines(page, lines, startIdx, { x, topY, bottomY, font, size, lineHeight, color }) {
+export function drawLines(page, lines, startIdx, { x, topY, bottomY, font, size, lineHeight, color, sectionSize, subheadSize, sectionColor }) {
+  const secSize  = sectionSize  ?? size * 1.25;
+  const subSize  = subheadSize  ?? size * 1.1;
+  const secColor = sectionColor ?? color;
   const lh = size * lineHeight;
-  let cursorY = topY - lh;
+
+  let cursorY = topY;
   let idx = startIdx;
 
-  while (idx < lines.length && cursorY >= bottomY) {
-    const line = lines[idx];
-    if (line !== "") {
-      page.drawText(line, { x, y: cursorY, size, font, color });
+  while (idx < lines.length) {
+    const { text, type } = lines[idx];
+
+    let thisSize, thisColor, thisLh, gapAbove;
+    if (type === 'section') {
+      thisSize  = secSize;
+      thisColor = secColor;
+      thisLh    = secSize * lineHeight;
+      gapAbove  = cursorY < topY ? lh * 0.5 : 0;
+    } else if (type === 'subhead') {
+      thisSize  = subSize;
+      thisColor = color;
+      thisLh    = subSize * lineHeight;
+      gapAbove  = cursorY < topY ? lh * 0.25 : 0;
+    } else {
+      thisSize  = size;
+      thisColor = color;
+      thisLh    = lh;
+      gapAbove  = 0;
     }
-    cursorY -= lh;
+
+    if (cursorY - gapAbove - thisLh < bottomY) break;
+
+    cursorY -= gapAbove + thisLh;
+
+    if (type !== 'blank' && text !== '') {
+      page.drawText(text, { x, y: cursorY, size: thisSize, font, color: thisColor });
+    }
+
     idx++;
   }
 

@@ -172,12 +172,17 @@ class baseMapping {
     }
 
     async htmlToText(html) {
+        if (!html) return '';
+        const rollData = this.actor.getRollData?.() ?? {};
         let htmlCopy = await foundry.applications.ux.TextEditor.enrichHTML(html);
-        return !html ? '' : htmlCopy.replaceAll(/<section[^>]*class="[^"]*secret[^"]*"[^>]*>.*?<\/section>/gms, "")
+        return htmlCopy.replaceAll(/<section[^>]*class="[^"]*secret[^"]*"[^>]*>.*?<\/section>/gms, "")
             .replaceAll("\n", "")
             .replaceAll(/<h1[>\s]([^<]*)<\/h1>/gms, "# $1\n")
             .replaceAll(/<h2[>\s]([^<]*)<\/h2>/gms, "## $1\n")
             .replaceAll(/<h3[>\s]([^<]*)<\/h3>/gms, "### $1\n")
+            .replaceAll(/<\/th>/gms, " | ")
+            .replaceAll(/<\/td>/gms, " | ")
+            .replaceAll(/<\/tr>/gms, "\n")
             .replaceAll(/<p[^>]*>/gms, "")
             .replaceAll(/<\/p>/gms, "\n")
             .replaceAll(/<li[^>]*>/gms, "• ")
@@ -185,7 +190,11 @@ class baseMapping {
             .replaceAll(/<[^>]*>/gms, "")
             .replaceAll(/\u00a0/g, "")
             .replace(/@UUID\[.*?\]\{([^}]+)\}/g, '$1')
-            .replace(/@Compendium\[.*?\]\{([^}]+)\}/g, '$1');
+            .replace(/@Compendium\[.*?\]\{([^}]+)\}/g, '$1')
+            .replace(/@([\w.]+)/g, (match, path) => {
+                const val = path.split('.').reduce((o, k) => (o != null && typeof o === 'object' ? o[k] : undefined), rollData);
+                return val != null && typeof val !== 'object' ? String(val) : match;
+            });
     }
 
     getValueByDottedKeys(obj, strKey) {
@@ -739,6 +748,9 @@ class baseMapping {
                 size,
                 lineHeight,
                 color: textColor,
+                sectionSize: size * 1.3,
+                subheadSize: size * 1.1,
+                sectionColor: headColor,
             });
 
             pageNum++;
