@@ -184,6 +184,7 @@ class baseMapping {
             .replaceAll(/<\/td>/gms, " | ")
             .replaceAll(/<\/tr>/gms, "\n")
             .replaceAll(/<p[^>]*>/gms, "")
+            .replace(/<\/p>(\s*) \| /g, ' | ')
             .replaceAll(/<\/p>/gms, "\n")
             .replaceAll(/<li[^>]*>/gms, "• ")
             .replaceAll(/<\/li>/gms, "\n")
