@@ -52,6 +52,7 @@ class FeaturesPlayerMapping extends StandardPlayer {
                 allText += `### ${feat.name}`;
                 if (feat.system?.source?.label) allText += ` (${feat.system.source.label})`;
                 allText += ` ###\n`;
+                if (feat.img && !/\.svg$/i.test(feat.img)) allText += `IMAGE:${feat.img}\n`;
                 if (feat.system?.description?.value) {
                     allText += await this.htmlToText(feat.system.description.value);
                     allText += "\n";
@@ -70,6 +71,7 @@ class FeaturesPlayerMapping extends StandardPlayer {
                 allText += `### ${trait.name}`;
                 if (trait.system?.source?.label) allText += ` (${trait.system.source.label})`;
                 allText += ` ###\n`;
+                if (trait.img && !/\.svg$/i.test(trait.img)) allText += `IMAGE:${trait.img}\n`;
                 if (trait.system?.description?.value) {
                     allText += await this.htmlToText(trait.system.description.value);
                     allText += "\n";
@@ -89,6 +91,7 @@ class FeaturesPlayerMapping extends StandardPlayer {
                 allText += `### ${feat.name}`;
                 if (feat.system?.source?.label) allText += ` (${feat.system.source.label})`;
                 allText += ` ###\n`;
+                if (feat.img && !/\.svg$/i.test(feat.img)) allText += `IMAGE:${feat.img}\n`;
                 if (feat.system?.description?.value) {
                     allText += await this.htmlToText(feat.system.description.value);
                     allText += "\n";
@@ -106,6 +109,7 @@ class FeaturesPlayerMapping extends StandardPlayer {
             allText += "=== Equipment with Effects ===\n\n";
             for (const item of equipWithEffects) {
                 allText += `### ${item.name} ###\n`;
+                if (item.img && !/\.svg$/i.test(item.img)) allText += `IMAGE:${item.img}\n`;
                 allText += await this.htmlToText(item.system.description.value);
                 allText += "\n";
             }

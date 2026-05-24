@@ -1,6 +1,6 @@
 import { detectImageType } from './lib/image-type-detector.js';
 import { rgb } from './lib/pdf-lib.esm.js';
-import { drawCenteredParagraph, drawLeftAlignedParagraph, drawCenteredText, drawTopLeftAlignedParagraph, wrapTextToLines, drawLines } from './pdf-utils.js'
+import { drawCenteredParagraph, drawLeftAlignedParagraph, drawCenteredText, drawTopLeftAlignedParagraph, wrapTextToLines, drawLines, asFoundryRoute } from './pdf-utils.js'
 
 class baseMapping {
 
@@ -726,6 +726,38 @@ class baseMapping {
         const lines = wrapTextToLines(text, font, size, bodyWidth);
         if (!lines.length) return;
 
+        // Embed any item images referenced in the text flow (single fetch, magic-byte detection)
+        const imageUrls = [...new Set(lines.filter(l => l.type === 'image').map(l => l.text))];
+        const lineImages = new Map();
+        for (const url of imageUrls) {
+            try {
+                const route = asFoundryRoute(url);
+                const buffer = await fetch(route).then(r => r.arrayBuffer());
+                const b = new Uint8Array(buffer, 0, 12);
+                const isPng  = b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47;
+                const isJpg  = b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF;
+                const isWebp = b[0]===0x52&&b[1]===0x49&&b[2]===0x46&&b[3]===0x46&&b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50;
+                let pdfImg;
+                if (isPng) {
+                    pdfImg = await pdfDoc.embedPng(buffer);
+                } else if (isJpg) {
+                    pdfImg = await pdfDoc.embedJpg(buffer);
+                } else if (isWebp) {
+                    const offscreen = new OffscreenCanvas(1, 1);
+                    const ctx = offscreen.getContext('2d');
+                    const img = new Image();
+                    img.src = URL.createObjectURL(new Blob([buffer], { type: 'image/webp' }));
+                    await img.decode();
+                    offscreen.width = img.width;
+                    offscreen.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const blob = await offscreen.convertToBlob({ type: 'image/png' });
+                    pdfImg = await pdfDoc.embedPng(await new Response(blob).arrayBuffer());
+                }
+                if (pdfImg) lineImages.set(url, pdfImg);
+            } catch (_) { /* skip unembeddable images */ }
+        }
+
         let lineIdx = 0;
         let pageNum = 0;
 
@@ -752,6 +784,8 @@ class baseMapping {
                 sectionSize: size * 1.3,
                 subheadSize: size * 1.1,
                 sectionColor: headColor,
+                embeddedImages: lineImages,
+                imageMaxHeight: size * 4,
             });
 
             pageNum++;

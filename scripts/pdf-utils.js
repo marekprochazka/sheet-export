@@ -344,6 +344,11 @@ export function wrapTextToLines(text, font, size, width) {
       result.push({ text: subheadMatch[1], type: 'subhead' });
       continue;
     }
+    const imageMatch = raw.match(/^IMAGE:(.+)$/);
+    if (imageMatch) {
+      result.push({ text: imageMatch[1], type: 'image' });
+      continue;
+    }
     if (raw.trim() === "") {
       result.push({ text: '', type: 'blank' });
       continue;
@@ -394,17 +399,31 @@ export function wrapTextToLines(text, font, size, width) {
  * @param {{ x, topY, bottomY, font, size, lineHeight, color, sectionSize?, subheadSize?, sectionColor? }} opts
  * @returns {number} index of the first line that did NOT fit
  */
-export function drawLines(page, lines, startIdx, { x, topY, bottomY, font, size, lineHeight, color, sectionSize, subheadSize, sectionColor }) {
+export function drawLines(page, lines, startIdx, { x, topY, bottomY, font, size, lineHeight, color, sectionSize, subheadSize, sectionColor, embeddedImages, imageMaxHeight }) {
   const secSize  = sectionSize  ?? size * 1.25;
   const subSize  = subheadSize  ?? size * 1.1;
   const secColor = sectionColor ?? color;
   const lh = size * lineHeight;
+  const imgMaxH  = imageMaxHeight ?? size * 4;
 
   let cursorY = topY;
   let idx = startIdx;
 
   while (idx < lines.length) {
     const { text, type } = lines[idx];
+
+    if (type === 'image') {
+      const pdfImg = embeddedImages?.get(text);
+      if (!pdfImg) { idx++; continue; }
+      const { width: iw, height: ih } = pdfImg.scale(1);
+      const scale = Math.min(imgMaxH / ih, imgMaxH / iw);
+      const dw = iw * scale, dh = ih * scale;
+      if (cursorY - dh < bottomY) break;
+      page.drawImage(pdfImg, { x, y: cursorY - dh, width: dw, height: dh });
+      cursorY -= dh + lh * 0.2;
+      idx++;
+      continue;
+    }
 
     let thisSize, thisColor, thisLh, gapAbove;
     if (type === 'section') {
