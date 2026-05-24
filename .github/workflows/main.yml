@@ -30,7 +30,7 @@
 #   - Has the module's entry on FoundryVTT's module administration site
 #     (https://foundryvtt.com/admin) been updated?
 #
-name: Create Module Files For GitHub Release
+name: Build and Package Module
 
 
 env:
@@ -167,38 +167,4 @@ jobs:
       #     manifest-file: ./module.json
 
 
-      - name: "FoundryVTT API publish"
-        uses: indiesdev/curl@v1.1
-        id: foundry-api
-        with:
-          url: https://foundryvtt.com/_api/packages/release_version/
-          method: "POST"
-          headers: '{ "Content-Type": "application/json", "Authorization": "${{ secrets.FOUNDRY_API_TOKEN }}" }'
-          accept: 200
-          body: '{"id": "sheet-export", "dry-run": false, "release": { "version": "${{ github.event.release.tag_name }}", "manifest": "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/module.json", "notes": "https://github.com/gioppoluca/sheet-export/blob/master/CHANGELOG.md", "compatibility": { "minimum": "11", "verified": "13", "maximum": "13" } } }'
-          log-response: true
-          timeout: 10000
-      - name: "Use response"
-        run: echo ${{ steps.foundry-api.outputs.response }}          
-
-        # response = await fetch("https://api.foundryvtt.com/_api/packages/release_version/", {
-        #   headers: {
-        #     'Content-Type': 'application/json',
-        #     'Authorization': 'fvttp_...'
-        #   },
-        #   method: "POST",
-        #   body: JSON.stringify({
-        #     "id": "example-module",
-        #     "dry-run": true,
-        #     "release": {
-        #       "version": "1.0.0",
-        #       "manifest": "https://github.com/example/example-module/issues/releases/download/release-1.0.0/system.json",
-        #       "notes": "https://github.com/example/example-module/releases/tag/release-1.0.0",
-        #       "compatibility": {
-        #         "minimum": "10.312",
-        #         "verified": "11",
-        #         "maximum": ""
-        #       }
-        #     }
-        #   })
-        # });
+      # FoundryVTT API publish step removed — fork is not registered on foundryvtt.com
