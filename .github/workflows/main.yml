@@ -49,15 +49,6 @@ env:
 
 
 on:
-  # Only run this workflow when a release is published.
-  # To modify this workflow when other events occur, see:
-  #   - https://docs.github.com/en/actions/using-workflows/triggering-a-workflow
-  #   - https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
-  #   - https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
-  #
-  # Note that some steps may depend on context variables that are only
-  # available for release events, so if you add other events, you may need to
-  # alter other parts of this workflow.
   release:
     types: [published]
 
@@ -71,19 +62,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
-
-      - name: Update CHANGELOG
-        id: changelog
-        uses: requarks/changelog-action@v1
-        with:
-          token: ${{ github.token }}
-          tag: ${{ github.ref_name }}
-      - name: Commit CHANGELOG.md
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          branch: master
-          commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
-          file_pattern: CHANGELOG.md
 
       # Extract version embedded in the tag.
       # This step expects the tag to be one of the following formats:
